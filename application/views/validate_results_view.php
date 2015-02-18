@@ -5,15 +5,18 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Welcome to CodeIgniter</title>
+    <title>Validated</title>
 </head>
 <body>
 
-<p>
-    <?php
-        $formatted = str_replace("\n", "<br/>", var_export($excel, true));
-        echo $formatted;
-    ?>
-</p>
+<?php if(empty($errors)) { ?>
+    <p>No errors found</p>
+<?php } else { ?>
+    <ul>
+        <? foreach($errors as $errorMessage) { ?>
+            <ul><?php echo $errorMessage ?></ul>
+        <?php } ?>
+    </ul>
+<?php } ?>
 
 </body>

@@ -1,4 +1,4 @@
-rsync -avP \
+rsync -rlptD \
 --exclude=".*" \
 --exclude="deploy.sh" \
 --exclude="upload/" \

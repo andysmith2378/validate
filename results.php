@@ -1,59 +1,15 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Validator extends CI_Controller {
+    $project = $_POST['project'];
 
-    private $allowedResourceCategories = [
-        "WK: Worksheets",
-        "SS: Skillsheets",
-        "VT: Video tutorials",
-        "PS: Puzzle sheets",
-        "CT: Technology worksheets",
-        "CH: Chapter pdfs",
-        "CG: Syllabus grids",
-        "TR: Teaching program (PDF)",
-        "TR: Teaching program (Word)"
+    $errors = doValidation($project);
 
-    ];
+    function doValidation($project = "test") {
+        require_once 'third_party/PHPExcel/PHPExcel.php';
 
-    public function index() {
-        redirect("validator/project");
-    }
+        $errors = array();
 
-    public function project() {
-        $projectsDir = FCPATH . "upload/";
-
-        $projectsList = [];
-
-        if ($projectsDirHandle = opendir($projectsDir)) {
-            while (false !== ($entry = readdir($projectsDirHandle))) {
-                if ($entry != "." && $entry != "..") {
-                    $projectsList[] = $entry;
-                }
-            }
-            closedir($projectsDirHandle);
-        }
-
-        $this->load->view('select_project_view', ["projects" => $projectsList]);
-
-    }
-
-    public function validate() {
-
-        $project = $_POST['project'];
-
-        $errors = $this->doValidation($project);
-
-        $this->load->view('validate_results_view', ["errors" => $errors]);
-
-    }
-
-    private function doValidation($project = "test") {
-        require_once APPPATH . 'third_party/PHPExcel/PHPExcel.php';
-
-        $errors = [];
-
-        $projectPath = FCPATH . "upload/" . $project . "/";
+        $projectPath = __DIR__ . "/upload/" . $project . "/";
 
         // Ensure the project path exists
         if(!file_exists($projectPath)) {
@@ -85,7 +41,7 @@ class Validator extends CI_Controller {
             $arrayData[$worksheet->getTitle()] = $worksheet->toArray();
         }
 
-        $mediaGrid = [];
+        $mediaGrid = array();
         $resCodeLabel = "";
         $resCategoryLabel = "";
         $resTitleLabel = "";
@@ -100,25 +56,25 @@ class Validator extends CI_Controller {
             else {
                 // Don't include rows that have resource category 'CH: Chapter pdfs'
                 if($entry[4] != "CH: Chapter pdfs") {
-                    $mediaGrid[] = [
+                    $mediaGrid[] = array(
                         $resCodeLabel => trim($entry[0]),
                         $resCategoryLabel => $entry[4],
                         $resTitleLabel => $entry[6]
-                    ];
+                    );
                 }
             }
         }
 
-        $contentFiles = [];
+        $contentFiles = array();
 
         // Scan the 'Final Content' folder
         if ($projectsDirHandle = opendir($projectPath . "Final Content/")) {
             while (false !== ($entry = readdir($projectsDirHandle))) {
                 if ($entry != "." && $entry != ".." && $entry != "Chapter PDFs") {
-                    $contentFiles[] = [
+                    $contentFiles[] = array(
                         "filename" => $entry,
                         "listedInMediaGrid" => FALSE
-                    ];
+                    );
                 }
             }
             closedir($projectsDirHandle);
@@ -167,4 +123,24 @@ class Validator extends CI_Controller {
 
     }
 
-}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Validated</title>
+</head>
+<body>
+
+<?php if(empty($errors)) { ?>
+    <p>No errors found</p>
+<?php } else { ?>
+    <ul>
+        <?php foreach($errors as $errorMessage) { ?>
+            <ul><?php echo $errorMessage ?></ul>
+        <?php } ?>
+    </ul>
+<?php } ?>
+
+</body>
+</html>
